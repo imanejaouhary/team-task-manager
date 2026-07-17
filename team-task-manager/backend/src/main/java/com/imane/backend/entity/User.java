@@ -30,7 +30,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"password", "team"})
+@ToString(exclude = {"password", "team", "role"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User {
 
@@ -55,6 +55,11 @@ public class User {
     @JoinColumn(name = "team_id")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Team team;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Role role;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
