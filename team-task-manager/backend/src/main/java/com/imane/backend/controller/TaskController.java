@@ -23,29 +23,44 @@ public class TaskController {
 
     private final TaskService taskService;
 
+    // Create Task
     @PostMapping
     public Task createTask(@RequestBody Task task) {
         return taskService.createTask(task);
     }
 
+    // Get All Tasks
     @GetMapping
     public List<Task> getAllTasks() {
         return taskService.getAllTasks();
     }
 
+    // Get Task By Id
     @GetMapping("/{id}")
     public Task getTaskById(@PathVariable Long id) {
         return taskService.getTaskById(id);
     }
 
+    // Get Tasks By Team Id
+    @GetMapping("/team/{teamId}")
+    public List<Task> getTasksByTeamId(@PathVariable Long teamId) {
+        return taskService.getTasksByTeamId(teamId);
+    }
+
+    // Update Task
     @PutMapping("/{id}")
     public Task updateTask(@PathVariable Long id,
                            @RequestBody Task task) {
         return taskService.updateTask(id, task);
     }
 
+    // Delete Task
     @DeleteMapping("/{id}")
     public void deleteTask(@PathVariable Long id) {
         taskService.deleteTask(id);
     }
+    @GetMapping("/user/{userId}")
+public List<Task> getTasksByAssignedUserId(@PathVariable Long userId) {
+    return taskService.getTasksByAssignedUserId(userId);
+}
 }

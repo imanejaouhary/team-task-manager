@@ -1,11 +1,13 @@
 package com.imane.backend.service;
 
-import com.imane.backend.entity.Task;
-import com.imane.backend.repository.TaskRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.imane.backend.entity.Task;
+import com.imane.backend.repository.TaskRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -51,4 +53,13 @@ public class TaskServiceImpl implements TaskService {
 
         taskRepository.delete(task);
     }
+
+    @Override
+    public List<Task> getTasksByTeamId(Long teamId) {
+        return taskRepository.findByTeamId(teamId);
+    }
+    @Override
+public List<Task> getTasksByAssignedUserId(Long userId) {
+    return taskRepository.findByAssignedUserId(userId);
+}
 }

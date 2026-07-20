@@ -1,17 +1,18 @@
 package com.imane.backend.service;
 
-import com.imane.backend.entity.User;
-
 import java.util.List;
-import java.util.Optional;
+
+import com.imane.backend.dto.UserDTO;
+import com.imane.backend.dto.request.CreateUserRequest;
+import com.imane.backend.entity.User;
 
 public interface UserService {
 
-    User createUser(User user);
+    UserDTO createUser(CreateUserRequest request);
 
-    Optional<User> getUserById(Long id);
+    UserDTO getUserById(Long id);
 
-    List<User> getAllUsers();
+    List<UserDTO> getAllUsers();
 
     User updateUser(Long id, User user);
 

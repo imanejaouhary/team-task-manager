@@ -1,35 +1,67 @@
 package com.imane.backend.service;
+import java.util.List;
 
-import com.imane.backend.entity.User;
-import com.imane.backend.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-import java.util.Optional;
+import com.imane.backend.dto.UserDTO;
+import com.imane.backend.dto.request.CreateUserRequest;
+import com.imane.backend.entity.Team;
+import com.imane.backend.entity.User;
+import com.imane.backend.mapper.UserMapper;
+import com.imane.backend.repository.TeamRepository;
+import com.imane.backend.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final TeamRepository teamRepository;
+    @Override
+    public UserDTO createUser(CreateUserRequest request) {
+    
+        User user = new User();
+    
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        Team team = teamRepository.findById(request.getTeamId())
+        .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Team not found"
+        ));
+
+        user.setTeam(team);
+    
+        User savedUser = userRepository.save(user);
+    
+        return UserMapper.toDTO(savedUser);
+    }
+    @Override
+public UserDTO getUserById(Long id) {
+
+    User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User not found"
+            ));
+
+    return UserMapper.toDTO(user);
+}
 
     @Override
-    public User createUser(User user) {
-        return userRepository.save(user);
-    }
+public List<UserDTO> getAllUsers() {
 
-    @Override
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
-    }
-
-    @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
+    return userRepository.findAll()
+            .stream()
+            .map(UserMapper::toDTO)
+            .toList();
+}
 
     @Override
     public User updateUser(Long id, User user) {
