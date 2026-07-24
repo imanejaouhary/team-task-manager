@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.imane.backend.dto.UserDTO;
 import com.imane.backend.dto.request.CreateUserRequest;
+import com.imane.backend.dto.request.LoginRequest;
+import com.imane.backend.dto.response.LoginResponse;
 import com.imane.backend.entity.User;
 import com.imane.backend.service.UserService;
 
@@ -59,4 +61,10 @@ public ResponseEntity<UserDTO> createUser(@RequestBody CreateUserRequest request
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
     }
+    @PostMapping("/login")
+public ResponseEntity<LoginResponse> login(
+        @RequestBody LoginRequest request) {
+
+    return ResponseEntity.ok(userService.login(request));
+}
 }

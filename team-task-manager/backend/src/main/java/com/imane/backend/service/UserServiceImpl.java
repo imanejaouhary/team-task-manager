@@ -2,16 +2,20 @@ package com.imane.backend.service;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.imane.backend.dto.UserDTO;
 import com.imane.backend.dto.request.CreateUserRequest;
+import com.imane.backend.dto.request.LoginRequest;
+import com.imane.backend.dto.response.LoginResponse;
 import com.imane.backend.entity.Team;
 import com.imane.backend.entity.User;
 import com.imane.backend.mapper.UserMapper;
 import com.imane.backend.repository.TeamRepository;
 import com.imane.backend.repository.UserRepository;
+import com.imane.backend.security.JwtService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +25,8 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
     @Override
     public UserDTO createUser(CreateUserRequest request) {
     
@@ -29,7 +35,7 @@ public class UserServiceImpl implements UserService {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         Team team = teamRepository.findById(request.getTeamId())
         .orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND,
@@ -83,4 +89,24 @@ public List<UserDTO> getAllUsers() {
         }
         userRepository.deleteById(id);
     }
+    @Override
+public LoginResponse login(LoginRequest request) {
+
+    User user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User not found"
+            ));
+
+    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Invalid password"
+        );
+    }
+
+    String token = jwtService.generateToken(user);
+
+return new LoginResponse(token);
+}
 }

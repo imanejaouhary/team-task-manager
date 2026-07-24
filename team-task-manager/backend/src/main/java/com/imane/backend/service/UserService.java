@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.imane.backend.dto.UserDTO;
 import com.imane.backend.dto.request.CreateUserRequest;
+import com.imane.backend.dto.request.LoginRequest;
+import com.imane.backend.dto.response.LoginResponse;
 import com.imane.backend.entity.User;
 
 public interface UserService {
@@ -17,4 +19,5 @@ public interface UserService {
     User updateUser(Long id, User user);
 
     void deleteUser(Long id);
+    LoginResponse login(LoginRequest request);
 }
