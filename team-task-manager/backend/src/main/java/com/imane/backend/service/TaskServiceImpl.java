@@ -41,7 +41,7 @@ public class TaskServiceImpl implements TaskService {
         task.setStatus(updatedTask.getStatus());
         task.setPriority(updatedTask.getPriority());
         task.setAssignedUser(updatedTask.getAssignedUser());
-        task.setTeam(updatedTask.getTeam());
+        task.setProject(updatedTask.getProject());
 
         return taskRepository.save(task);
     }
@@ -56,10 +56,11 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public List<Task> getTasksByTeamId(Long teamId) {
-        return taskRepository.findByTeamId(teamId);
+        return taskRepository.findByProjectTeamId(teamId);
     }
+
     @Override
-public List<Task> getTasksByAssignedUserId(Long userId) {
-    return taskRepository.findByAssignedUserId(userId);
-}
+    public List<Task> getTasksByAssignedUserId(Long userId) {
+        return taskRepository.findByAssignedUserId(userId);
+    }
 }
