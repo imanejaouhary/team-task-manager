@@ -3,6 +3,7 @@ package com.imane.backend.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,6 +16,7 @@ import com.imane.backend.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -25,16 +27,16 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
-
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(formLogin -> formLogin.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
-
-                        // Everything else requires authentication
+                        .requestMatchers(HttpMethod.POST, "/users").hasRole("ADMIN")
+                        .requestMatchers("/roles/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
 
                 .addFilterBefore(

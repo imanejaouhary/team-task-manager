@@ -7,6 +7,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.imane.backend.entity.User;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 
 public class CustomUserDetails implements UserDetails {
 
@@ -16,11 +18,21 @@ public class CustomUserDetails implements UserDetails {
         this.user = user;
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public User getUser() {
+        return user;
+    }
 
+    @Override
+public Collection<? extends GrantedAuthority> getAuthorities() {
+
+    if (user.getRole() == null) {
         return Collections.emptyList();
     }
+
+    return Collections.singletonList(
+            new SimpleGrantedAuthority("ROLE_" + user.getRole().getName())
+    );
+}
 
     @Override
     public String getPassword() {

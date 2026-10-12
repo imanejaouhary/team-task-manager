@@ -22,4 +22,5 @@ public class CreateUserRequest {
     private String password;
 
     private Long teamId;
+    private String roleName;
 }

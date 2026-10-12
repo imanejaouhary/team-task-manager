@@ -2,7 +2,9 @@ package com.imane.backend.security;
 
 import java.io.IOException;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -11,6 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.imane.backend.entity.User;
 import com.imane.backend.repository.UserRepository;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,6 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
+        // No JWT -> continue normally
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -40,25 +44,49 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
 
-        String email = jwtService.extractUsername(token);
+        try {
 
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            String email = jwtService.extractUsername(token);
 
-            User user = userRepository.findByEmail(email).orElse(null);
+            Authentication existingAuth =
+                    SecurityContextHolder.getContext().getAuthentication();
 
-            if (user != null && jwtService.isTokenValid(token, user)) {
+            if (email != null
+                    && (existingAuth == null
+                    || existingAuth instanceof AnonymousAuthenticationToken)) {
 
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                user,
-                                null,
-                                java.util.Collections.emptyList());
+                User user = userRepository.findByEmailWithRole(email).orElse(null);
 
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request));
+                if (user != null && jwtService.isTokenValid(token, user)) {
 
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    CustomUserDetails userDetails =
+                            new CustomUserDetails(user);
+
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource()
+                                    .buildDetails(request)
+                    );
+
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(authToken);
+                }
             }
+
+        } catch (JwtException | IllegalArgumentException e) {
+
+            // Token invalid or expired
+            // Don't crash the request
+            SecurityContextHolder.clearContext();
+
+            System.out.println("Invalid/expired JWT: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);
