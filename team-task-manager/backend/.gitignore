@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+### Secrets ###
+.env
+*.env
+**/application-local.properties
+**/application-secret.properties
+
+### Logs / OS ###
+*.log
+Thumbs.db
+.DS_Store
+
+### Frontend (mn ba3d) ###
+node_modules/
