@@ -2,21 +2,22 @@ package com.imane.backend.service;
 
 import java.util.List;
 
-import com.imane.backend.entity.Task;
+import com.imane.backend.dto.TaskDTO;
+import com.imane.backend.dto.request.CreateTaskRequest;
+import com.imane.backend.dto.request.UpdateTaskRequest;
+import com.imane.backend.dto.request.UpdateTaskStatusRequest;
 
 public interface TaskService {
 
-    Task createTask(Task task);
+    TaskDTO createTask(CreateTaskRequest request, Long currentUserId);
 
-    List<Task> getAllTasks();
+    List<TaskDTO> getTasksFor(Long currentUserId);
 
-    Task getTaskById(Long id);
+    TaskDTO getTaskById(Long id, Long currentUserId);
 
-    Task updateTask(Long id, Task task);
+    TaskDTO updateTask(Long id, UpdateTaskRequest request, Long currentUserId);
 
-    void deleteTask(Long id);
+    TaskDTO updateStatus(Long id, UpdateTaskStatusRequest request, Long currentUserId);
 
-    List<Task> getTasksByTeamId(Long teamId);
-    List<Task> getTasksByAssignedUserId(Long userId);
-
+    void deleteTask(Long id, Long currentUserId);
 }
