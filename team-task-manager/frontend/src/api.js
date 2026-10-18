@@ -38,3 +38,10 @@ export async function login(email, password) {
 export function logout() {
   localStorage.removeItem('token');
 }
+export function getProjects() {
+  return request('/projects');
+}
+
+export function getTasks() {
+  return request('/tasks');
+}
