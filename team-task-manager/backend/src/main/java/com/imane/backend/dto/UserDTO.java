@@ -22,4 +22,5 @@ public class UserDTO {
     private String email;
 
     private String teamName;
+    private String role;
 }
