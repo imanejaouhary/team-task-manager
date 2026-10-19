@@ -1,5 +1,6 @@
 import ClientSpace from './ClientSpace';
 import EmployeeSpace from './EmployeeSpace';
+import ManagerSpace from './ManagerSpace';
 
 export default function Dashboard({ user, onLogout }) {
   let content;
@@ -7,6 +8,8 @@ export default function Dashboard({ user, onLogout }) {
     content = <ClientSpace />;
   } else if (user.role === 'EMPLOYEE') {
     content = <EmployeeSpace />;
+  } else if (user.role === 'MANAGER') {
+    content = <ManagerSpace />;
   } else {
     content = <p>L'espace {user.role} n'est pas encore construit.</p>;
   }
