@@ -15,6 +15,7 @@ import com.imane.backend.repository.TeamRepository;
 import com.imane.backend.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import com.imane.backend.dto.TeamMemberDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -113,4 +114,33 @@ public class TeamServiceImpl implements TeamService {
         }
         teamRepository.delete(team);
     }
+    
+@Override
+public List<TeamMemberDTO> getTeamMembers(Long teamId, User me) {
+    Team team = teamRepository.findById(teamId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Team not found"));
+
+    String role = me.getRole().getName();
+
+    boolean allowed =
+            "ADMIN".equals(role)
+            || ("MANAGER".equals(role)
+                && team.getManager().getId().equals(me.getId()));
+
+    if (!allowed) {
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "Access denied");
+    }
+
+    return team.getUsers().stream()
+            .filter(user -> "EMPLOYEE".equals(user.getRole().getName()))
+            .map(user -> new TeamMemberDTO(
+                    user.getId(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getEmail()))
+            .toList();
+}
+
 }

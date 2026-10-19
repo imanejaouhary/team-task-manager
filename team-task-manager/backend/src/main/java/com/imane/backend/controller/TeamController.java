@@ -15,6 +15,7 @@ import com.imane.backend.security.CustomUserDetails;
 import com.imane.backend.service.TeamService;
 
 import lombok.RequiredArgsConstructor;
+import com.imane.backend.dto.TeamMemberDTO;
 
 @RestController
 @RequestMapping("/teams")
@@ -53,4 +54,13 @@ public class TeamController {
     public void delete(@PathVariable Long id) {
         teamService.deleteTeam(id);
     }
+    
+@GetMapping("/{id}/members")
+@PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+public List<TeamMemberDTO> getMembers(
+        @PathVariable Long id,
+        @AuthenticationPrincipal CustomUserDetails me) {
+    return teamService.getTeamMembers(id, me.getUser());
+}
+
 }
