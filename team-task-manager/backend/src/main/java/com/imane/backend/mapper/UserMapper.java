@@ -21,6 +21,7 @@ public class UserMapper {
                                 ? user.getTeam().getName()
                                 : null
                 )
+                .role(user.getRole() != null ? user.getRole().getName() : null)
                 .build();
     }
 }
