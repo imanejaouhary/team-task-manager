@@ -45,3 +45,9 @@ export function getProjects() {
 export function getTasks() {
   return request('/tasks');
 }
+export function updateTaskStatus(id, status) {
+  return request(`/tasks/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+}
