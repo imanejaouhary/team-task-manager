@@ -91,4 +91,7 @@ export function updateTask(id, taskData) {
     body: JSON.stringify(taskData),
   });
 }
+export function getUsers() {
+  return request('/users');
+}
 
