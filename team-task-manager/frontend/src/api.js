@@ -94,4 +94,7 @@ export function updateTask(id, taskData) {
 export function getUsers() {
   return request('/users');
 }
+export function deleteUser(id) {
+  return request(`/users/${id}`, { method: 'DELETE' });
+}
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { getUsers } from '../api';
+import { deleteUser, getUsers } from '../api';
 
-export default function AdminSpace() {
+export default function AdminSpace({ currentUser }) {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState('');
 
@@ -10,6 +10,17 @@ export default function AdminSpace() {
       .then(setUsers)
       .catch((err) => setError(err.message));
   }, []);
+
+  async function handleDelete(u) {
+    if (!window.confirm(`Supprimer ${u.firstName} ${u.lastName} (${u.email}) ?`)) return;
+    setError('');
+    try {
+      await deleteUser(u.id);
+      setUsers((current) => current.filter((x) => x.id !== u.id));
+    } catch (err) {
+      setError(err.message);
+    }
+  }
 
   return (
     <div>
@@ -22,6 +33,7 @@ export default function AdminSpace() {
             <th>Email</th>
             <th>Rôle</th>
             <th>Équipe</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -31,6 +43,11 @@ export default function AdminSpace() {
               <td>{u.email}</td>
               <td>{u.role}</td>
               <td>{u.teamName || '-'}</td>
+              <td>
+                {u.id !== currentUser.id && (
+                  <button onClick={() => handleDelete(u)}>Supprimer</button>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>

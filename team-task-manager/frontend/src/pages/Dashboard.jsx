@@ -12,7 +12,7 @@ export default function Dashboard({ user, onLogout }) {
   } else if (user.role === 'MANAGER') {
     content = <ManagerSpace />;
   } else if (user.role === 'ADMIN') {
-    content = <AdminSpace />;
+       content = <AdminSpace currentUser={user} />;
   } else {
     content = <p>Rôle inconnu : {user.role}</p>;
   }
