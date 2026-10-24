@@ -22,6 +22,7 @@ import com.imane.backend.security.JwtService;
 import com.imane.backend.dto.request.UpdateUserRequest;
 import lombok.RequiredArgsConstructor;
 import com.imane.backend.dto.request.RegisterRequest ;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @Service
 @RequiredArgsConstructor
@@ -147,13 +148,18 @@ public class UserServiceImpl implements UserService {
 
         return new LoginResponse(token);
     }
-    @Override
-public void deleteUser(Long id) {
-    if (!userRepository.existsById(id)) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+       @Override
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        try {
+            userRepository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Cet utilisateur est encore lié à des équipes, projets ou tâches. Réassigne-les d'abord.");
+        }
     }
-    userRepository.deleteById(id);
-}
 @Override
 public UserDTO register(RegisterRequest request) {
 
