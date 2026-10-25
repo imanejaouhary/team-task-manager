@@ -24,6 +24,10 @@ import com.imane.backend.dto.response.LoginResponse;
 import com.imane.backend.security.CustomUserDetails;
 import com.imane.backend.service.UserService;
 import com.imane.backend.dto.request.RegisterRequest ;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
+import com.imane.backend.dto.request.ChangeTeamRequest;
+import com.imane.backend.dto.request.ChangeRoleRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -80,5 +84,19 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<UserDTO> register(@RequestBody RegisterRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED).body(userService.register(request));
+    }
+        @PutMapping("/{id}/team")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserDTO> changeTeam(@PathVariable Long id,
+                                              @RequestBody ChangeTeamRequest request) {
+        return ResponseEntity.ok(userService.changeTeam(id, request));
+    }
+
+    @PutMapping("/{id}/role")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserDTO> changeRole(@PathVariable Long id,
+                                              @RequestBody ChangeRoleRequest request,
+                                              @AuthenticationPrincipal CustomUserDetails me) {
+        return ResponseEntity.ok(userService.changeRole(id, request, me.getUser().getId()));
     }
 }

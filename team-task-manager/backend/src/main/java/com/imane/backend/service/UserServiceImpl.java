@@ -23,6 +23,15 @@ import com.imane.backend.dto.request.UpdateUserRequest;
 import lombok.RequiredArgsConstructor;
 import com.imane.backend.dto.request.RegisterRequest ;
 import org.springframework.dao.DataIntegrityViolationException;
+import com.imane.backend.dto.request.ChangeRoleRequest;
+import com.imane.backend.dto.request.ChangeTeamRequest;
+import java.util.List;
+
+import org.springframework.transaction.annotation.Transactional;
+import com.imane.backend.entity.Task;
+import com.imane.backend.enums.TaskStatus;
+import com.imane.backend.repository.ProjectRepository;
+import com.imane.backend.repository.TaskRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +42,8 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final TaskRepository taskRepository;
+    private final ProjectRepository projectRepository;
 
     @Override
     public UserDTO createUser(CreateUserRequest request) {
@@ -180,4 +191,90 @@ public UserDTO register(RegisterRequest request) {
 
     return UserMapper.toDTO(userRepository.save(user));
 }
+        @Override
+    @Transactional
+    public UserDTO changeTeam(Long id, ChangeTeamRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (!"EMPLOYEE".equals(user.getRole().getName())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Seul un employé appartient à une équipe");
+        }
+        if (request.getTeamId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "teamId is required");
+        }
+        Team team = teamRepository.findById(request.getTeamId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Team not found"));
+
+        boolean sameTeam = user.getTeam() != null && user.getTeam().getId().equals(team.getId());
+        if (!sameTeam
+                && !taskRepository.findByAssignedUserIdAndStatusNot(id, TaskStatus.DONE).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Cet employé a des tâches en cours. Réassigne-les d'abord.");
+        }
+
+        user.setTeam(team);
+        return UserMapper.toDTO(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public UserDTO changeRole(Long id, ChangeRoleRequest request, Long adminId) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        String current = user.getRole().getName();
+        if (user.getId().equals(adminId) || "ADMIN".equals(current)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Le rôle d'un administrateur ne peut pas être modifié");
+        }
+        if (request.getRoleName() == null || request.getRoleName().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "roleName is required");
+        }
+
+        String target = request.getRoleName().trim().toUpperCase();
+        if ("ADMIN".equals(target)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot create ADMIN");
+        }
+        if (target.equals(current)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cet utilisateur a déjà ce rôle");
+        }
+
+        Role role = roleRepository.findByName(target)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role not found"));
+
+        String linked = "Cet utilisateur est encore lié à des données. Réassigne-les d'abord.";
+        if ("MANAGER".equals(current) && !teamRepository.findByManagerId(id).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, linked);
+        }
+        if ("CLIENT".equals(current) && !projectRepository.findByClientId(id).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, linked);
+        }
+
+        if ("EMPLOYEE".equals(current)) {
+            List<Task> open = taskRepository.findByAssignedUserIdAndStatusNot(id, TaskStatus.DONE);
+            if (!open.isEmpty()) {
+                if (!request.isUnassignOpenTasks()) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT,
+                            "Cet employé a " + open.size()
+                                    + " tâche(s) en cours. Désassigne-les ou réassigne-les d'abord.");
+                }
+                open.forEach(t -> t.setAssignedUser(null));
+                taskRepository.saveAll(open);
+            }
+        }
+
+        if ("EMPLOYEE".equals(target)) {
+            if (request.getTeamId() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "teamId is required for EMPLOYEE");
+            }
+            user.setTeam(teamRepository.findById(request.getTeamId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Team not found")));
+        } else {
+            user.setTeam(null);
+        }
+
+        user.setRole(role);
+        return UserMapper.toDTO(userRepository.save(user));
+    }
 }

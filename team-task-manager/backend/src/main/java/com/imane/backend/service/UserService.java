@@ -8,6 +8,8 @@ import com.imane.backend.dto.request.LoginRequest;
 import com.imane.backend.dto.request.UpdateUserRequest;
 import com.imane.backend.dto.response.LoginResponse;
 import com.imane.backend.dto.request.RegisterRequest;
+import com.imane.backend.dto.request.ChangeRoleRequest;
+import com.imane.backend.dto.request.ChangeTeamRequest;
 
 public interface UserService {
 
@@ -23,4 +25,7 @@ public interface UserService {
     void deleteUser(Long id);
 
     LoginResponse login(LoginRequest request);
+    UserDTO changeTeam(Long id, ChangeTeamRequest request);
+
+    UserDTO changeRole(Long id, ChangeRoleRequest request, Long adminId); 
 }
