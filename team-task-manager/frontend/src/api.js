@@ -97,4 +97,10 @@ export function getUsers() {
 export function deleteUser(id) {
   return request(`/users/${id}`, { method: 'DELETE' });
 }
+export function updateUser(id, data) {
+  return request(`/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
 
