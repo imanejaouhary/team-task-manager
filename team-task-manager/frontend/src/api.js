@@ -103,4 +103,17 @@ export function updateUser(id, data) {
     body: JSON.stringify(data),
   });
 }
+export function changeUserRole(id, data) {
+  return request(`/users/${id}/role`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export function changeUserTeam(id, teamId) {
+  return request(`/users/${id}/team`, {
+    method: 'PUT',
+    body: JSON.stringify({ teamId }),
+  });
+}
 
